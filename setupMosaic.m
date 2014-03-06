@@ -1,6 +1,6 @@
 % Takes in cell array of j filenames corresponding to aligned set of images
 
-function [ imgs,  fLength, expTime] = setupMosaic(fnames)
+function [ imgs,  fLength, expTime] = setupMosaic(fnames, useFixedFocalLength, fixedFocalLength)
     assert(iscellstr(fnames), 'Error: fnames must be a cell array of filename strings');
      
     imgcount = numel(fnames);
@@ -20,8 +20,11 @@ function [ imgs,  fLength, expTime] = setupMosaic(fnames)
         info = imfinfo(fnames{i});
         %try
             expTime(i) = info.DigitalCamera.ExposureTime;
-            fLength(i) = 663;%663 is the focal length in pixels for the a640 %info.DigitalCamera.FocalLength*info.XResolution/2.54;
-            disp(info.ResolutionUnit);
+            if useFixedFocalLength ==1
+                fLength(i) = fixedFocalLength;
+            else
+                fLength(i) = 3000;%663 is the focal length in pixels for the a640 %info.DigitalCamera.FocalLength*info.XResolution/2.54;
+            end
         %catch err
        %    print('Could not find exposure time or focal length for an image');
        % end
