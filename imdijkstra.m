@@ -31,13 +31,12 @@ function [ pathout ] = imdijkstra(img1,img2)
             weights(j,i) = abs(img1(j,i)-img2(j,i));
         end
     end
-    
     disp('done with differencing, preparing graph');
     %Create graph for Djikstra
     n=1;
     i=1;
     ndes = zeros(size(intsect,1)*size(intsect,2),2);
-    edgs = zeros(2,3);
+    edgs = zeros(4*(size(intsect,1)-1)*(size(intsect,2)-1),3);
     for x=1:(size(intsect,2)-1)
         for y=1:(size(intsect,1)-1)
             %set up the node coordinate matrices and the edge connections
@@ -45,7 +44,11 @@ function [ pathout ] = imdijkstra(img1,img2)
             edgs(i+1,:) = [n+1,n,weights(y,x)];
             edgs(i+2,:) = [n,n+size(intsect,2),weights(y+1,x)];
             edgs(i+3,:) = [n+size(intsect,2),n,weights(y,x)];
-            i=i+4;
+            i=i+4; 
+        end
+    end
+    for x=1:size(intsect,2)
+        for y=1:size(intsect,1)
             ndes(n,:) = [y,x];
             n = n+1;
             
@@ -59,9 +62,8 @@ function [ pathout ] = imdijkstra(img1,img2)
                 if y==endnode(2)
                     endn = n;
                 end
-            end 
+            end
         end
-        disp(x);
     end
     disp('in dijkstra');
     [costout, pathout] = dijkstra(ndes,edgs,[startn],[endn]);
