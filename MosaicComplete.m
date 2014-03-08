@@ -5,7 +5,7 @@
 %'u:\workspace\766_mosaic\capitalImages\'
 function [mosaicImg, croppedImg] = MosaicComplete (folder, numImgs, blend)
     mnames = buildMosaicNames(folder, 1, numImgs, 1); % generate name list
-    [ imgs,  fLength, expTime] = setupMosaic(mnames, 1, 10000); % read in images
+    [ imgs,  fLength, expTime] = setupMosaic(mnames, 1, 4750); % read in images
     rows = size(imgs,2);
     cols = size(imgs,3);
     [ cylinderX, cylinderY ] = CylinderImgLut (rows, cols, fLength(1), 0,0); % generate cylinder image look up table
