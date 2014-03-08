@@ -50,9 +50,7 @@ for ind=1:rows*cols
         c = 1;
     end
     
-    for l=1:3
-        mosaicImg1(y,x,l,1) = img1(r,c,l);
-    end
+    mosaicImg1(y,x,:,1) = img1(r,c,:);
     
     c = c+1;
 end
@@ -63,13 +61,11 @@ for r = 1:i2r
     for c = 1:i2c
         y = r-minY+1;
         x = c-minX+1;
-        for l=1:3
-            mosaicImg2(y,x,l,1) = img2(r,c,l,1);
-        end
+        mosaicImg2(y,x,:,1) = img2(r,c,:,1);
     end
 end
 
 disp('Done with second image');
 
-mosaicImg = Dijkstras(mosaicImg1,mosaicImg2);
+mosaicImg = imdijkstra(mosaicImg1,mosaicImg2);
 end

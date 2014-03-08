@@ -132,6 +132,7 @@ all_positive = 1;
 [n,nc] = size(AorV);
 [m,mc] = size(xyCorE);
 [E,cost] = processInputs(AorV,xyCorE);
+disp('   done processing inputs');
 if nargin < 5
     iswaitbar = 0;
 end

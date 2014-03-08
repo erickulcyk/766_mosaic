@@ -45,17 +45,35 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
     end        
     
     %find difference on intersect region -- this is our weighting function
-    weights = ones(dims);
-    for i=minx:maxx;
-        for j=miny:maxy;
-            weights(j,i) = 1+sum(power(img1(j,i,:)-img2(j,i,:),2));
-        end
+    weights = zeros(dims);
+    cweights = zeros(ceil(dims/10));
+    ccounts = zeros(ceil(dims/10));
+    for i=1:dims(2);
+       for j=1:dims(1);
+          weights(j,i) = 1+sum(power(img1(j,i,:)-img2(j,i,:),2));
+          cweights(ceil(j/10),ceil(i/10)) = cweights(ceil(j/10),ceil(i/10))+weights(j,i);
+          ccounts(ceil(j/10),ceil(i/10)) = ccounts(ceil(j/10),ceil(i/10))+1;
+       end
     end
+    cweights = cweights./ccounts + ones(size(cweights));
     disp('done with differencing, preparing graph');
-    %Create graph for Djikstra
-    [V,E3,startn,endn,topn,botn] = buildGraphForGrid(dims,weights,startnode,endnode,topconnect, botconnect);
     
-    disp('in dijkstra');
+    disp(dims);
+    %Create graph for Djikstra
+    [V,E3full,startn,endn,topn,botn] = buildGraphForGrid(dims,weights,startnode,endnode,topconnect, botconnect);
+    [cV,cE3,cstn,cndn,~,~] = buildGraphForGrid(ceil(dims/10),cweights,ceil(startnode/10),ceil(endnode/10),ceil(topconnect/10),ceil(botconnect/10));
+    disp(size(V));
+    
+    disp('Coarse grid: in dijkstra');
+    [ccost, cpath] = jkdijkstra(cV, cE3, [cstn], [cndn]);
+    disp(ccost);
+    
+    disp('Refining grid using computed path');
+    %make new edges list for interconnect within and between blocks
+    %that lie on cpath
+    [V,E3] = buildUpGridOnPath(V,cV,weights,cpath,dims);
+    
+    disp('Fine grid: in dijkstra');
     [costout, pathout] = jkdijkstra(V, E3, [startn], [endn]);
     disp(costout);
     
@@ -65,20 +83,24 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
     %otherwise, the left-up image is on top 
     connect = topn;
     if poslin 
-       if sum(sum(img1def(miny-1,:)),sum(img1def(:,maxx+1)))
+       if sum([sum(img1def(miny-1,:)),sum(img1def(:,maxx+1))])
           connect = botn;
        end
     else
-       if sum(sum(img1def(miny-1,:)),sum(img1def(:,minx-1)))
+       if sum([sum(img1def(miny-1,:)),sum(img1def(:,minx-1))])
           connect = botn;
        end
     end
     intr = img1(miny:maxy,minx:maxx,:);
     intr2 = img2(miny:maxy,minx:maxx,:);
-    intrmask = repmat(findGridConnectedToPath(V,E3,connect,pathout,dims),[1 1 3]);
-    intr(intrmask) = intr2(intrmask);
+    intrmask = findGridConnectedToPath(V,E3full,connect,pathout,dims);
+    intrmask = blurMask(intrmask,poslin);
+    for i=1:size(intr,1)
+       for j=1:size(intr,2)
+          intr(i,j,:) = intr(i,j,:)*(1-intrmask(i,j)) + intr2(i,j,:)*intrmask(i,j);
+       end
+    end
     spliced = img1;
-    spmask = repmat(intsect,[1 1 3]);
-    spliced(spmask) = intr;
+    spliced(miny:maxy,minx:maxx,:) = intr;
 end
 
