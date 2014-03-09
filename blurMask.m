@@ -21,6 +21,22 @@ function [ blurred ] = blurMask( mask, pos )
         mask9 = mask9(1:size(mask,1),11:size(mask9,2));
         mask10 = padarray(mask,[5,5],'symmetric');
         mask10 = mask10(11:size(mask10,1),1:size(mask,2));
+        mask11 = padarray(mask,[6,6],'symmetric');
+        mask11 = mask11(1:size(mask,1),13:size(mask11,2));
+        mask12 = padarray(mask,[6,6],'symmetric');
+        mask12 = mask12(13:size(mask12,1),1:size(mask,2));
+        mask13 = padarray(mask,[7,7],'symmetric');
+        mask13 = mask13(1:size(mask,1),15:size(mask13,2));
+        mask14 = padarray(mask,[7,7],'symmetric');
+        mask14 = mask14(15:size(mask14,1),1:size(mask,2));
+        mask15 = padarray(mask,[8,8],'symmetric');
+        mask15 = mask7(1:size(mask,1),17:size(mask15,2));
+        mask16 = padarray(mask,[8,8],'symmetric');
+        mask16 = mask8(17:size(mask16,1),1:size(mask,2));
+        mask17 = padarray(mask,[9,9],'symmetric');
+        mask17 = mask9(1:size(mask,1),19:size(mask17,2));
+        mask18 = padarray(mask,[9,9],'symmetric');
+        mask18 = mask10(19:size(mask18,1),1:size(mask,2));
     else
         mask1 = padarray(mask,[1,1],'symmetric');
         mask1 = mask1(1:size(mask,1),1:size(mask,2));
@@ -42,7 +58,24 @@ function [ blurred ] = blurMask( mask, pos )
         mask9 = mask9(1:size(mask,1),1:size(mask,2));
         mask10 = padarray(mask,[5,5],'symmetric');
         mask10 = mask10(11:size(mask10,1),11:size(mask10,2));
+        mask11 = padarray(mask,[6,6],'symmetric');
+        mask11 = mask11(1:size(mask,1),1:size(mask,2));
+        mask12 = padarray(mask,[6,6],'symmetric');
+        mask12 = mask12(13:size(mask12,1),13:size(mask12,2));
+        mask13 = padarray(mask,[7,7],'symmetric');
+        mask13 = mask13(1:size(mask,1),1:size(mask,2));
+        mask14 = padarray(mask,[7,7],'symmetric');
+        mask14 = mask14(15:size(mask14,1),15:size(mask14,2));
+        mask15 = padarray(mask,[8,8],'symmetric');
+        mask15 = mask15(1:size(mask,1),1:size(mask,2));
+        mask16 = padarray(mask,[8,8],'symmetric');
+        mask16 = mask16(17:size(mask16,1),17:size(mask16,2));
+        mask17 = padarray(mask,[9,9],'symmetric');
+        mask17 = mask17(1:size(mask,1),1:size(mask,2));
+        mask18 = padarray(mask,[9,9],'symmetric');
+        mask18 = mask18(19:size(mask18,1),19:size(mask18,2));
     end
     
-    blurred = (10*mask +9*(mask1+mask2)+6*(mask3+mask4)+3*(mask5+mask6)+mask7+mask8+mask9+mask10)/50;
-mend
+
+    blurred = (150*mask +128*(mask1+mask2)+64*(mask3+mask4)+32*(mask5+mask6)+16*(mask7+mask8)+8*(mask9+mask10)+4*(mask11+mask12)+2*(mask13+mask14)+1*(mask15+mask16+mask17+mask18)/612;
+end
