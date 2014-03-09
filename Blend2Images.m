@@ -111,3 +111,12 @@ for r = 1:i2r
         end
     end
 end
+
+for i = 2 : sizeY-1
+    for  j = 2 : sizeX-1
+        if sum(mosaicImg(i,j,:)) == 0
+            mosaicImg(i,j,:) = (mosaicImg(i-1,j-1,:) + mosaicImg(i-1,j,:) + mosaicImg(i,j+1,:) + mosaicImg(i+1,j+1,:))/4;
+        end
+    end
+end
+end

@@ -12,6 +12,7 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
     
     % Intersect the two images to find overlapping region
     intsect = img1def & img2def;
+    before = cputime;
     [minx,miny,maxx,maxy] = findboundsofmask(intsect);
     dims = [maxy-miny+1,maxx-minx+1]; %dimensions of intersecting region
     
@@ -32,8 +33,10 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
     
     disp('found intersect, computing differences');
     %fill in parts which are only defined in one image with that value
-    for i=1:size(img1,2)
-        for j=1:size(img1,1)
+    i1cols = size(img1,2);
+    i1rows = size(img1,1);
+    parfor i=1:i1cols
+        for j=1:i1rows
             %Want to maximize total output, fill in undefined regions
             if(~img1def(j,i))
                 img1(j,i,:) = img2(j,i,:);
@@ -51,20 +54,23 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
     for i=1:dims(2);
        for j=1:dims(1);
           weights(j,i) = 1+sum(power(img1(j,i,:)-img2(j,i,:),2));
-          cweights(ceil(j/10),ceil(i/10)) = cweights(ceil(j/10),ceil(i/10))+weights(j,i);
-          ccounts(ceil(j/10),ceil(i/10)) = ccounts(ceil(j/10),ceil(i/10))+1;
+          a = ceil(j/10);
+          b = ceil(i/10);
+          cweights(a,b) = cweights(a,b)+weights(j,i);
+          ccounts(a,b) = ccounts(a,b)+1;
        end
     end
-    cweights = cweights./ccounts + ones(size(cweights));
+    %cweights = cweights./ccounts + ones(size(cweights));
     disp('done with differencing, preparing graph');
     
     disp(dims);
     %Create graph for Djikstra
     [V,E3full,startn,endn,topn,botn] = buildGraphForGrid(dims,weights,startnode,endnode,topconnect, botconnect);
-    [cV,cE3,cstn,cndn,~,~] = buildGraphForGrid(ceil(dims/10),cweights,ceil(startnode/10),ceil(endnode/10),ceil(topconnect/10),ceil(botconnect/10));
+    %[cV,cE3,cstn,cndn,~,~] = buildGraphForGrid(ceil(dims/10),cweights,ceil(startnode/10),ceil(endnode/10),ceil(topconnect/10),ceil(botconnect/10));
     disp(size(V));
-    
+%{    
     disp('Coarse grid: in dijkstra');
+    disp(['Time to find boundsmask: ',num2str(cputime-before)]);
     [ccost, cpath] = jkdijkstra(cV, cE3, [cstn], [cndn]);
     disp(ccost);
     
@@ -72,10 +78,10 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
     %make new edges list for interconnect within and between blocks
     %that lie on cpath
     [V,E3] = buildUpGridOnPath(V,cV,weights,cpath,dims);
-    
+   %} 
     disp('Fine grid: in dijkstra');
-    [costout, pathout] = jkdijkstra(V, E3, [startn], [endn]);
-    disp(costout);
+    %[costout, pathout] = jkdijkstra(V, E3, [startn], [endn]);
+    %disp(costout);
     
     disp('stitching images in intersect region');
     %Figure out which image should be placed above the cut line
@@ -91,12 +97,17 @@ function [ spliced, spmask,intrmask,pathout ] = imdijkstra(img1,img2)
           connect = botn;
        end
     end
+    
+    [pathout, intrmask] = SimplePath(startnode, endnode, dims, poslin, V(connect,:));
+    
     intr = img1(miny:maxy,minx:maxx,:);
     intr2 = img2(miny:maxy,minx:maxx,:);
-    intrmask = findGridConnectedToPath(V,E3full,connect,pathout,dims);
+    %intrmask = findGridConnectedToPath(V,E3full,connect,pathout,dims);
     intrmask = blurMask(intrmask,poslin);
-    for i=1:size(intr,1)
-       for j=1:size(intr,2)
+    maskrows = size(intr,1);
+    maskcols = size(intr,2);
+    parfor i=1:maskrows
+       for j=1:maskcols
           intr(i,j,:) = intr(i,j,:)*(1-intrmask(i,j)) + intr2(i,j,:)*intrmask(i,j);
        end
     end

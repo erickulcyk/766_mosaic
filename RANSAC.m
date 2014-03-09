@@ -12,8 +12,10 @@ b = zeros(8);
 bestTransform = 0;
 while i<iter
     i= i+1;
-    disp(i)
-    disp(['Best: ',num2str(bestInliers)])
+    if mod(i,10)==0 
+        disp(i)
+        disp(['Best: ',num2str(bestInliers)])
+    end
     
     %Compute Pairs
     [ pts1 ] = FourRandomNumbers(f1count);
@@ -87,7 +89,7 @@ while i<iter
             inliers = inliers + 1;
         end
     end
-
+    
     if inliers>bestInliers
         bestInliers = inliers;
         bestTransform = H;

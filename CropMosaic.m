@@ -6,45 +6,49 @@ cols = size(mosaicImg,2);
     minY = 1;
     maxY = rows;
     
-    for i = 1:cols
+    denom = 2;
+    
+    for i = 100:cols-100
         j = 1;
-        while j<rows && mosaicImg(j,i,1)==0 && mosaicImg(j,i,2)==0 && mosaicImg(j,i,3)==0
+        while j<rows/denom && sum(mosaicImg(j,i,:))<4
             j = j+1;
         end
         
-        if j<rows
+        if j<rows/denom
             minY = max(minY, j);
         end
         
         j = rows-1;
-        while j>0 && mosaicImg(j,i,1)==0 && mosaicImg(j,i,2)==0 && mosaicImg(j,i,3)==0
+        while j>(rows*(denom-1))/denom && sum(mosaicImg(j,i,:))<4
             j = j-1;
         end
-        
-        if j>1
+ 
+        if j>(rows*(denom-1))/denom
             maxY = min(maxY,j);
         end
     end
     
     for i = minY:maxY
         j = 1;
-        while j<cols && mosaicImg(i,j,1)==0 && mosaicImg(i,j,2)==0 && mosaicImg(i,j,3)==0
+        while j<cols/denom && sum(mosaicImg(i,j,:))<4
             j = j+1;
         end
         
-        if j<cols
+        if j<cols/denom
             minX = max(minX, j);
         end
         
         j = cols-1;
-        while j>0 && mosaicImg(i,j,1)==0 && mosaicImg(i,j,2)==0 && mosaicImg(i,j,3)==0
+        while j>(cols*(denom-1))/denom && sum(mosaicImg(i,j,:))<4
             j = j-1;
         end
         
-        if j>1
+        if j>(cols*(denom-1))/denom
             maxX = min(maxX,j);
         end
     end
+    
+    disp(['Crop Found Minx MaxX, minY, maxY: ',num2str(minX),' ',num2str(maxX),' ', num2str(minY),' ',num2str(maxY)]);
     
     croppedImg = imcrop(mosaicImg,[minX, minY, maxX-minX, maxY-minY]);
 end
